@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { initMongo, apiKeyRepository } from '@/db';
-import { isAuthorizedAdmin } from '@/server/auth';
+import { guardMutation } from '@/server/auth';
 import { handleCorsOptions, corsHeaders } from '@/server/cors';
 
 export async function OPTIONS() {
   return handleCorsOptions();
 }
 
-// GET /api/keys (Admin only: Lists active API keys)
+// GET /api/keys (Requires API Key or Admin Session)
 export async function GET(req: NextRequest) {
-  if (!(await isAuthorizedAdmin(req))) {
-    return NextResponse.json(
-      { error: 'Unauthorized: Admin authentication or valid API key required' },
-      { status: 401, headers: corsHeaders() }
-    );
-  }
+  const unauth = await guardMutation(req);
+  if (unauth) return unauth;
 
   try {
     await initMongo();
@@ -29,14 +25,10 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/keys (Admin only: Creates a new API key)
+// POST /api/keys (Requires API Key or Admin Session)
 export async function POST(req: NextRequest) {
-  if (!(await isAuthorizedAdmin(req))) {
-    return NextResponse.json(
-      { error: 'Unauthorized: Admin authentication or valid API key required' },
-      { status: 401, headers: corsHeaders() }
-    );
-  }
+  const unauth = await guardMutation(req);
+  if (unauth) return unauth;
 
   try {
     await initMongo();

@@ -67,9 +67,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
 
         // If not found or error, we still try to add it with basic info
         const isFound = omdbRes.ok && data.Response !== 'False';
+        const imdbId = isFound && data.imdbID ? data.imdbID : (title.startsWith('tt') ? title : `tt${Math.floor(1000000 + Math.random() * 9000000)}`);
 
         const payload = {
           title: isFound ? data.Title : title,
+          imdbId,
           type: isFound && data.Type === 'series' ? 'series' : 'movie',
           posterUrl: isFound && data.Poster !== 'N/A' ? data.Poster : undefined,
           releaseYear: isFound && data.Year ? parseInt(data.Year.replace(/[^0-9]/g, '').substring(0, 4)) : undefined,

@@ -31,6 +31,7 @@ export const AddEditMediaModal: React.FC<AddEditMediaModalProps> = ({
 }) => {
   const [type, setType] = useState<MediaType>('series');
   const [title, setTitle] = useState('');
+  const [imdbId, setImdbId] = useState('');
   const [posterUrl, setPosterUrl] = useState('');
   const [releaseYear, setReleaseYear] = useState<string>('');
   const [status, setStatus] = useState<WatchStatus>('watching');
@@ -50,6 +51,7 @@ export const AddEditMediaModal: React.FC<AddEditMediaModalProps> = ({
     if (initialData) {
       setType(initialData.type);
       setTitle(initialData.title);
+      setImdbId(initialData.imdbId || '');
       setPosterUrl(initialData.posterUrl || '');
       setReleaseYear(initialData.releaseYear ? initialData.releaseYear.toString() : '');
       setStatus(initialData.status);
@@ -64,6 +66,7 @@ export const AddEditMediaModal: React.FC<AddEditMediaModalProps> = ({
       // Reset defaults
       setType('series');
       setTitle('');
+      setImdbId('');
       setPosterUrl('');
       setReleaseYear(new Date().getFullYear().toString());
       setStatus('watching');
@@ -92,6 +95,10 @@ export const AddEditMediaModal: React.FC<AddEditMediaModalProps> = ({
       setError('Title is required.');
       return;
     }
+    if (!imdbId.trim()) {
+      setError('IMDb ID is required (e.g. tt1234567).');
+      return;
+    }
 
     setIsSubmitting(true);
     setError(null);
@@ -99,6 +106,7 @@ export const AddEditMediaModal: React.FC<AddEditMediaModalProps> = ({
     try {
       const payload: Partial<MediaItem> = {
         title: title.trim(),
+        imdbId: imdbId.trim(),
         type,
         posterUrl: posterUrl.trim() || undefined,
         releaseYear: releaseYear ? parseInt(releaseYear, 10) : undefined,
@@ -143,6 +151,7 @@ export const AddEditMediaModal: React.FC<AddEditMediaModalProps> = ({
       if (!res.ok) throw new Error(data.error || 'Failed to fetch from OMDB');
       
       if (data.Title) setTitle(data.Title);
+      if (data.imdbID) setImdbId(data.imdbID);
       if (data.Poster && data.Poster !== 'N/A') setPosterUrl(data.Poster);
       if (data.Year) setReleaseYear(data.Year.replace(/[^0-9]/g, '').substring(0, 4));
       if (data.imdbRating && data.imdbRating !== 'N/A') setRating(parseFloat(data.imdbRating));
@@ -243,8 +252,8 @@ export const AddEditMediaModal: React.FC<AddEditMediaModalProps> = ({
             </div>
           </div>
 
-          {/* 2. Title & Year */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* 2. Title, IMDb ID & Year */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div className="sm:col-span-2">
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -270,14 +279,28 @@ export const AddEditMediaModal: React.FC<AddEditMediaModalProps> = ({
                 className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
               />
               <p className="text-[10px] text-slate-500 mt-1">
-                Tip: Paste an IMDb ID (like tt1234567) and click Search OMDB to ensure exact matches.
+                Tip: Paste an IMDb ID (like tt1234567) and click Search OMDB to auto-fill.
               </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                IMDb ID *
+              </label>
+              <input
+                type="text"
+                required
+                value={imdbId}
+                onChange={(e) => setImdbId(e.target.value.trim())}
+                placeholder="tt1375666"
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-xs font-mono focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+              />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                Release Year
+                Year
               </label>
               <input
                 type="number"

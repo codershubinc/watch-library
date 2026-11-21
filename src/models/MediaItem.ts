@@ -9,6 +9,23 @@ export interface SeriesProgress {
   totalSeasons?: number;
 }
 
+export interface LibraryStats {
+  totalCount: number;
+  moviesCount: number;
+  seriesCount: number;
+  statusBreakdown: {
+    watching: number;
+    completed: number;
+    plan_to_watch: number;
+    on_hold: number;
+    dropped: number;
+  };
+  topGenres: { genre: string; count: number }[];
+  averageRating: number | null;
+  totalMovieDurationMinutes: number;
+  totalEpisodesWatched: number;
+}
+
 /**
  * Universal Base Media interface
  */
@@ -16,10 +33,10 @@ export interface MediaItem {
   id: string;
   title: string;
   type: MediaType;
+  imdbId: string; // Required unique IMDb identifier (e.g. tt0111161)
   posterUrl?: string;
   backdropUrl?: string;
   releaseYear?: number;
-  imdbId?: string;
   status: WatchStatus;
   progress?: SeriesProgress;
   rating?: number;
@@ -36,6 +53,7 @@ export interface MediaItem {
   airingStatus?: string;
   nextEpisodeDate?: string;
   episodesPerSeason?: number[];
+  lastSeen?: string; // Dedicated timestamp of when the title/episode was last watched (separate from updatedAt)
   createdAt: string;
   updatedAt: string;
 }

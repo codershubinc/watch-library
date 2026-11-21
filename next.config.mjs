@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  allowedDevOrigins: ['127.0.0.1', 'localhost', '0.0.0.0'],
   async headers() {
     return [
       {
@@ -35,8 +36,6 @@ const nextConfig = {
       },
     ];
   },
-
 };
-
 
 export default nextConfig;

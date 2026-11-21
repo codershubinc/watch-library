@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { initMongo, mediaRepository } from '@/db';
-import { isAuthorizedAdmin } from '@/server/auth';
+import { guardMutation } from '@/server/auth';
 import { handleCorsOptions, corsHeaders } from '@/server/cors';
 
 export async function OPTIONS() {
   return handleCorsOptions();
 }
 
-// PATCH /api/series/[id]/progress (Admin or API Key Bearer)
+// PATCH /api/series/[id]/progress (Requires API Key or Admin Session)
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!(await isAuthorizedAdmin(req))) {
-    return NextResponse.json(
-      { error: 'Unauthorized: Admin authentication or valid API key required' },
-      { status: 401, headers: corsHeaders() }
-    );
-  }
+  const unauth = await guardMutation(req);
+  if (unauth) return unauth;
 
   try {
     await initMongo();

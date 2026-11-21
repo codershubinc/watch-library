@@ -4,6 +4,12 @@ import fs from 'fs';
 import path from 'path';
 import net from 'net';
 import dns from 'dns';
+import { guardReadOnly } from '@/server/auth';
+import { handleCorsOptions } from '@/server/cors';
+
+export async function OPTIONS() {
+  return handleCorsOptions();
+}
 
 // Store cached images on disk in .cache/images
 const CACHE_DIR = path.join(process.cwd(), '.cache', 'images');
@@ -168,11 +174,16 @@ async function fetchSafeImage(initialUrl: string): Promise<{ buffer: Buffer; con
 }
 
 export async function GET(req: NextRequest) {
+  const guard = await guardReadOnly(req);
+  if (!guard.allowed) {
+    return guard.response!;
+  }
+
   const { searchParams } = new URL(req.url);
   const imageUrl = searchParams.get('url');
 
   if (!imageUrl) {
-    return NextResponse.json({ error: 'Query parameter "url" is required' }, { status: 400 });
+    return NextResponse.json({ error: 'Query parameter "url" is required' }, { status: 400, headers: guard.headers });
   }
 
   const hash = crypto.createHash('sha256').update(imageUrl).digest('hex');

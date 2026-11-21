@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { initMongo, apiKeyRepository } from '@/db';
-import { isAuthorizedAdmin } from '@/server/auth';
+import { guardMutation } from '@/server/auth';
 import { handleCorsOptions, corsHeaders } from '@/server/cors';
 
 export async function OPTIONS() {
   return handleCorsOptions();
 }
 
-// DELETE /api/keys/[id] (Admin only: Revokes an API key)
+// DELETE /api/keys/[id] (Requires API Key or Admin Session)
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!(await isAuthorizedAdmin(req))) {
-    return NextResponse.json(
-      { error: 'Unauthorized: Admin authentication or valid API key required' },
-      { status: 401, headers: corsHeaders() }
-    );
-  }
+  const unauth = await guardMutation(req);
+  if (unauth) return unauth;
 
   try {
     await initMongo();

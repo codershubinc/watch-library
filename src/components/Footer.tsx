@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { DbStatus } from '../types';
 
 interface FooterProps {
@@ -23,6 +24,13 @@ export const Footer: React.FC<FooterProps> = ({
           Personal Movies & Series Watch Library • {totalCount} titles cataloged
         </p>
         <div className="flex items-center gap-3">
+          <Link
+            href="/doc"
+            className="text-amber-400 hover:text-amber-300 font-medium transition"
+          >
+            API Docs
+          </Link>
+          <span>•</span>
           <button
             onClick={onOpenDbModal}
             className="text-slate-400 hover:text-slate-200 transition"

@@ -1,12 +1,19 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { initMongo, mongoDbConnected } from '@/db';
-import { handleCorsOptions, corsHeaders } from '@/server/cors';
+import { guardReadOnly } from '@/server/auth';
+import { handleCorsOptions } from '@/server/cors';
 
 export async function OPTIONS() {
   return handleCorsOptions();
 }
 
-export async function GET() {
+// GET /api/status (Public read with 30/sec rate limit; unlimited with API key)
+export async function GET(req: NextRequest) {
+  const guard = await guardReadOnly(req);
+  if (!guard.allowed) {
+    return guard.response!;
+  }
+
   await initMongo();
 
   return NextResponse.json(
@@ -19,7 +26,7 @@ export async function GET() {
     },
     {
       headers: {
-        ...corsHeaders(),
+        ...guard.headers,
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'SAMEORIGIN',
         'Referrer-Policy': 'strict-origin-when-cross-origin',

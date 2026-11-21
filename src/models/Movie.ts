@@ -51,6 +51,7 @@ export function sanitizeMovieInput(input: any): Partial<MovieItem> {
   if (typeof input.plot === 'string') sanitized.plot = input.plot.trim() || undefined;
   if (typeof input.notes === 'string') sanitized.notes = input.notes.trim() || undefined;
   if (typeof input.imdbId === 'string') sanitized.imdbId = input.imdbId.trim() || undefined;
+  if (typeof input.lastSeen === 'string' && input.lastSeen.trim()) sanitized.lastSeen = input.lastSeen.trim();
 
   // Movie-specific fields
   if (input.durationMinutes !== undefined && input.durationMinutes !== null && input.durationMinutes !== '') {

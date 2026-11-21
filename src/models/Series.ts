@@ -58,6 +58,7 @@ export function sanitizeSeriesInput(input: any): Partial<SeriesItem> {
   if (typeof input.plot === 'string') sanitized.plot = input.plot.trim() || undefined;
   if (typeof input.notes === 'string') sanitized.notes = input.notes.trim() || undefined;
   if (typeof input.imdbId === 'string') sanitized.imdbId = input.imdbId.trim() || undefined;
+  if (typeof input.lastSeen === 'string' && input.lastSeen.trim()) sanitized.lastSeen = input.lastSeen.trim();
 
   // Series-specific progress
   sanitized.progress = {

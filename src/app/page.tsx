@@ -19,6 +19,7 @@ import { MediaDetailModal } from '@/components/MediaDetailModal';
 import { QuickProgressModal } from '@/components/QuickProgressModal';
 import { MongoInfoModal } from '@/components/MongoInfoModal';
 import { ImportModal } from '@/components/ImportModal';
+import { ApiKeysModal } from '@/components/ApiKeysModal';
 import { MediaItem } from '@/types';
 
 export default function HomePage() {
@@ -69,6 +70,7 @@ export default function HomePage() {
   const [quickProgressItem, setQuickProgressItem] = useState<MediaItem | null>(null);
   const [isDbModalOpen, setIsDbModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isApiKeysModalOpen, setIsApiKeysModalOpen] = useState(false);
 
   // Infinite scroll intersection observer
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -107,6 +109,7 @@ export default function HomePage() {
         }}
         onOpenImportModal={() => setIsImportModalOpen(true)}
         onOpenDbModal={() => setIsDbModalOpen(true)}
+        onOpenApiKeysModal={() => setIsApiKeysModalOpen(true)}
         dbStatus={dbStatus}
         totalCount={items.length}
         movieCount={movieCount}
@@ -260,6 +263,12 @@ export default function HomePage() {
           fetchLibrary();
           fetchDbStatus();
         }}
+      />
+
+      <ApiKeysModal
+        isOpen={isApiKeysModalOpen}
+        onClose={() => setIsApiKeysModalOpen(false)}
+        token={token}
       />
     </div>
   );

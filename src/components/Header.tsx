@@ -1,5 +1,6 @@
 import React from 'react';
-import { Film, Tv, Lock, Unlock, Plus, Database, Eye, ShieldCheck, LogOut, UploadCloud } from 'lucide-react';
+import Link from 'next/link';
+import { Film, Tv, Lock, Unlock, Plus, Database, Eye, ShieldCheck, LogOut, UploadCloud, Key, BookOpen } from 'lucide-react';
 import { DbStatus } from '../types';
 
 interface HeaderProps {
@@ -9,6 +10,7 @@ interface HeaderProps {
   onOpenAddModal: () => void;
   onOpenImportModal: () => void;
   onOpenDbModal: () => void;
+  onOpenApiKeysModal?: () => void;
   dbStatus: DbStatus | null;
   totalCount: number;
   seriesCount: number;
@@ -22,6 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAddModal,
   onOpenImportModal,
   onOpenDbModal,
+  onOpenApiKeysModal,
   dbStatus,
   totalCount,
   seriesCount,
@@ -76,11 +79,28 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Right Action Controls: DB Status & Admin Authentication */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
+            <Link
+              href="/doc"
+              title="API Documentation & cURL Examples"
+              className="flex items-center gap-1.5 bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-2 rounded-xl border border-slate-800 hover:border-slate-750 transition shadow-sm"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Docs</span>
+            </Link>
 
             {/* Admin Controls */}
             {isAdmin ? (
               <div className="flex items-center gap-2">
+                <button
+                  id="btn-api-keys"
+                  onClick={onOpenApiKeysModal}
+                  title="API Keys Dashboard"
+                  className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-amber-300 text-xs sm:text-sm font-semibold px-2.5 sm:px-3 py-2 rounded-lg border border-amber-500/30 transition shadow-sm"
+                >
+                  <Key className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">API Keys</span>
+                </button>
                 <button
                   id="btn-import-media"
                   onClick={onOpenImportModal}
