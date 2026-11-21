@@ -181,11 +181,12 @@ Integrates with media servers (Plex, Jellyfin, Kodi, Home Assistant) or automate
 - **Existing Titles**: If the title already exists, updates watch status or episode progress, and backfills any missing artwork or `tmdbId`.
 - **New Titles**: If the title does not exist in your catalog, automatically creates it fully populated with artwork and metadata!
 
-Requires an API Key (`Authorization: Bearer wl_live_...` or query param `?apiKey=wl_live_...`).
+Requires an API Key via header (`Authorization: Bearer wl_live_YOUR_API_KEY`).
 
 ### Scrobble Movie Watched (Auto-Enriches Poster & Details):
 ```bash
-curl -X POST "http://localhost:3001/api/webhooks/scrobble?apiKey=wl_live_YOUR_API_KEY" \
+curl -X POST "http://localhost:3001/api/webhooks/scrobble" \
+  -H "Authorization: Bearer wl_live_YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "imdbId": "tt1877830",
@@ -198,7 +199,8 @@ curl -X POST "http://localhost:3001/api/webhooks/scrobble?apiKey=wl_live_YOUR_AP
 
 ### Scrobble Series Episode Watched (With Explicit Artwork):
 ```bash
-curl -X POST "http://localhost:3001/api/webhooks/scrobble?apiKey=wl_live_YOUR_API_KEY" \
+curl -X POST "http://localhost:3001/api/webhooks/scrobble" \
+  -H "Authorization: Bearer wl_live_YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "imdbId": "tt11280740",

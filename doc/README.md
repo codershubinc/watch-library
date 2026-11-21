@@ -40,18 +40,14 @@ http://localhost:3001
 
 ## Authentication Modes
 
-Pass your API key using any of the following standard headers:
-1. **Bearer Token (Recommended)**:
+Pass your API key using standard HTTP headers:
+1. **Bearer Token (Standard & Recommended)**:
    ```http
    Authorization: Bearer wl_live_YOUR_API_KEY
    ```
 2. **Custom Header**:
    ```http
    x-api-key: wl_live_YOUR_API_KEY
-   ```
-3. **Query Parameter**:
-   ```
-   ?apiKey=wl_live_YOUR_API_KEY
    ```
 
 ---

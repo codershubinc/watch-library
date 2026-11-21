@@ -4,10 +4,9 @@ The Watch Library backend enforces security and rate limits on all API endpoints
 1. **Mutating Endpoints (`POST`, `PUT`, `PATCH`, `DELETE`)**: Strictly protected by an API Key or Admin Session Token.
 2. **Read-Only Endpoints (`GET`)**: Publicly accessible with a **30 requests/second** sliding rate limit per IP. Providing an API Key removes all rate limits for unlimited access.
 
-Supported authentication methods:
-- `Authorization: Bearer <TOKEN_OR_KEY>`
+Supported authentication headers:
+- `Authorization: Bearer <TOKEN_OR_KEY>` (Standard & recommended)
 - `x-api-key: <KEY>`
-- `?apiKey=<KEY>`
 
 ---
 
