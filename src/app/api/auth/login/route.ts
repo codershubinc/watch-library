@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   if (authResult.valid) {
     recordLoginAttempt(clientIp, true);
     const token = generateToken();
-    addToken(token);
+    await addToken(token);
     return NextResponse.json({
       success: true,
       token,

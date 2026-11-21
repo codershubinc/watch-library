@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { TokenSession } from '@/models';
 import { apiKeyRepository } from '@/db/apiKeyRepository';
 import { authRepository, VerifyAuthResult } from '@/db/authRepository';
+import { mongoClient, mongoDbConnected, initMongo } from '@/db/client';
 import { corsHeaders } from '@/server/cors';
 
 /**
@@ -30,27 +31,100 @@ declare global {
 export const activeTokens: Map<string, TokenSession> =
   global._activeTokens || (global._activeTokens = new Map<string, TokenSession>());
 
-export function addToken(token: string): void {
+/**
+ * Adds an active session token.
+ * Stores in local in-memory Map AND persists to MongoDB 'admin_sessions' collection
+ * so all serverless instances, containers, and workers share the active session.
+ */
+export async function addToken(token: string): Promise<void> {
   const now = Date.now();
-  activeTokens.set(token, {
+  const session: TokenSession = {
     createdAt: now,
     expiresAt: now + TOKEN_TTL_MS,
-  });
-}
+  };
+  activeTokens.set(token, session);
 
-export function isTokenValid(token: string): boolean {
-  if (!token) return false;
-  const session = activeTokens.get(token);
-  if (!session) return false;
-  if (Date.now() > session.expiresAt) {
-    activeTokens.delete(token);
-    return false;
+  try {
+    await initMongo();
+    if (mongoDbConnected && mongoClient) {
+      const db = mongoClient.db();
+      await db.collection('admin_sessions').updateOne(
+        { token },
+        {
+          $set: {
+            token,
+            createdAt: new Date(session.createdAt),
+            expiresAt: new Date(session.expiresAt),
+          },
+        },
+        { upsert: true }
+      );
+    }
+  } catch (err) {
+    console.warn('[auth] Could not persist session token to MongoDB:', err);
   }
-  return true;
 }
 
-export function revokeToken(token: string): void {
+/**
+ * Validates an active session token.
+ * Checks local in-memory cache first, then MongoDB 'admin_sessions' collection
+ * to ensure persistent authentication across serverless instances and deployments.
+ */
+export async function isTokenValid(token: string): Promise<boolean> {
+  if (!token) return false;
+  const now = Date.now();
+
+  // 1. Fast in-memory check
+  const session = activeTokens.get(token);
+  if (session) {
+    if (now <= session.expiresAt) {
+      return true;
+    } else {
+      activeTokens.delete(token);
+    }
+  }
+
+  // 2. Query MongoDB 'admin_sessions' for serverless / multi-instance deployment
+  try {
+    await initMongo();
+    if (mongoDbConnected && mongoClient) {
+      const db = mongoClient.db();
+      const doc = await db.collection('admin_sessions').findOne({ token });
+      if (doc && doc.expiresAt) {
+        const expiresTime = new Date(doc.expiresAt).getTime();
+        if (now <= expiresTime) {
+          activeTokens.set(token, {
+            createdAt: new Date(doc.createdAt).getTime(),
+            expiresAt: expiresTime,
+          });
+          return true;
+        } else {
+          db.collection('admin_sessions').deleteOne({ token }).catch(() => {});
+          return false;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[auth] Error checking session from MongoDB:', err);
+  }
+
+  return false;
+}
+
+/**
+ * Revokes a session token from both memory and MongoDB.
+ */
+export async function revokeToken(token: string): Promise<void> {
   activeTokens.delete(token);
+  try {
+    await initMongo();
+    if (mongoDbConnected && mongoClient) {
+      const db = mongoClient.db();
+      await db.collection('admin_sessions').deleteOne({ token });
+    }
+  } catch (err) {
+    console.warn('[auth] Error revoking session from MongoDB:', err);
+  }
 }
 
 // -------------------------------------------------------------
@@ -192,7 +266,7 @@ export async function isAuthorizedAdmin(req: Request): Promise<boolean> {
   if (!token) return false;
 
   // 1. Check active session tokens
-  if (isTokenValid(token)) {
+  if (await isTokenValid(token)) {
     return true;
   }
 

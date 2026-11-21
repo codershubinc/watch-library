@@ -24,15 +24,17 @@ export function useAdminAuth() {
       const res = await fetch('/api/auth/verify', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
-      if (data.isAdmin) {
-        setIsAdmin(true);
-      } else {
-        setIsAdmin(false);
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('watch_lib_admin_token');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.isAdmin) {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('watch_lib_admin_token');
+          }
+          setToken(null);
         }
-        setToken(null);
       }
     } catch {
       setIsAdmin(false);
@@ -53,11 +55,11 @@ export function useAdminAuth() {
       });
       const data = await res.json();
       if (data.success && data.token) {
-        setIsAdmin(true);
-        setToken(data.token);
         if (typeof window !== 'undefined') {
           localStorage.setItem('watch_lib_admin_token', data.token);
         }
+        setToken(data.token);
+        setIsAdmin(true);
         return true;
       }
       throw new Error(data.error || 'Incorrect admin password');

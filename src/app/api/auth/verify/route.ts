@@ -8,6 +8,6 @@ export async function GET(req: NextRequest) {
   }
 
   const token = authHeader.split(' ')[1];
-  const isValid = token ? isTokenValid(token) : false;
+  const isValid = token ? await isTokenValid(token) : false;
   return NextResponse.json({ isAdmin: isValid });
 }
