@@ -33,8 +33,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
       if (success) {
         setPassword('');
         onClose();
-      } else {
-        setError('Incorrect admin password.');
       }
     } catch (err: any) {
       setError(err?.message || 'Login failed. Please check server.');

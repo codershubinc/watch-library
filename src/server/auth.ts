@@ -2,22 +2,16 @@ import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { TokenSession } from '@/models';
 import { apiKeyRepository } from '@/db/apiKeyRepository';
+import { authRepository, VerifyAuthResult } from '@/db/authRepository';
 import { corsHeaders } from '@/server/cors';
 
-export function getAdminPassword(): string {
-  return process.env.ADMIN_PASSWORD || 'admin123';
-}
-
 /**
- * Constant-time password verification using SHA-256 digests and crypto.timingSafeEqual
- * to prevent timing side-channel attacks.
+ * Verifies the admin password strictly against the MongoDB database.
+ * No password checking from environment variables.
+ * Uses constant-time SHA-256 digest comparisons to prevent timing side-channel attacks.
  */
-export function verifyPassword(provided: string): boolean {
-  if (typeof provided !== 'string') return false;
-  const adminPassword = getAdminPassword();
-  const providedHash = crypto.createHash('sha256').update(provided).digest();
-  const expectedHash = crypto.createHash('sha256').update(adminPassword).digest();
-  return crypto.timingSafeEqual(providedHash, expectedHash);
+export async function verifyPassword(provided: string): Promise<VerifyAuthResult> {
+  return authRepository.verifyPassword(provided);
 }
 
 // Generate a cryptographically secure random token

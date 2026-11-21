@@ -128,10 +128,29 @@ curl -X DELETE http://localhost:3001/api/keys/1732200123456 \
 ## 3. Admin Session Authentication (Web UI Flow)
 
 ### 3.1 Admin Login
-Authenticate using the server administrator password configured in `ADMIN_PASSWORD`.
+Admin authentication is managed securely directly in MongoDB via the `admin_auth` collection (with fallback to `auth`). The server does not check any passwords from environment variables.
+
+#### MongoDB Collection: `admin_auth`
+Create an object in your database in the `admin_auth` collection. Both plain-text passwords and SHA-256 hashes are supported:
+
+**Option A: Plain-text password (easiest)**
+```json
+{
+  "username": "admin",
+  "password": "YOUR_ADMIN_PASSWORD"
+}
+```
+
+**Option B: SHA-256 hashed password (enhanced security)**
+```json
+{
+  "username": "admin",
+  "passwordHash": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
+}
+```
 
 > [!NOTE]
-> Protected by brute-force rate limiting: maximum 5 failed attempts per 15-minute window per IP. Password checks use constant-time comparison to prevent timing attacks.
+> Protected by brute-force rate limiting: maximum 5 failed attempts per 15-minute window per IP. Password checks use constant-time `crypto.timingSafeEqual` SHA-256 comparisons to prevent timing attacks.
 
 ```bash
 curl -X POST http://localhost:3001/api/auth/login \

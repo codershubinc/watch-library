@@ -60,9 +60,9 @@ export function useAdminAuth() {
         }
         return true;
       }
-      return false;
-    } catch {
-      return false;
+      throw new Error(data.error || 'Incorrect admin password');
+    } catch (err: any) {
+      throw err;
     }
   };
 

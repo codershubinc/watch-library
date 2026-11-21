@@ -37,8 +37,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Password is required' }, { status: 400 });
   }
 
-  // 3. Constant-Time Timing-Safe Password Check
-  if (verifyPassword(password)) {
+  // 3. Database Authentication (checks MongoDB 'admin_auth' collection)
+  const authResult = await verifyPassword(password);
+  if (authResult.valid) {
     recordLoginAttempt(clientIp, true);
     const token = generateToken();
     addToken(token);
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
   } else {
     recordLoginAttempt(clientIp, false);
     return NextResponse.json(
-      { success: false, error: 'Incorrect admin password' },
+      { success: false, error: authResult.error || 'Incorrect admin password' },
       { status: 401 }
     );
   }

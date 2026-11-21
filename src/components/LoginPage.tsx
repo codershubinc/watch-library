@@ -37,8 +37,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         setTimeout(() => {
           onNavigateHome();
         }, 600);
-      } else {
-        setError('Incorrect admin password. Please try again.');
       }
     } catch (err: any) {
       setError(err?.message || 'Login failed. Please check server connectivity.');
@@ -192,7 +190,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
               <div className="pt-2 border-t border-slate-800/80 text-center">
                 <p className="text-[11px] text-slate-400">
-                  Tip: Default passcode is <code className="text-amber-400 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">admin123</code> (configured via <code className="text-slate-400">ADMIN_PASSWORD</code>).
+                  Authentication is managed securely in MongoDB (<code className="text-amber-400 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">admin_auth</code> collection).
                 </p>
               </div>
             </div>
