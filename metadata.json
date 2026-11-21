@@ -1,0 +1,6 @@
+{
+  "name": "Watch Library",
+  "description": "A showcase library for watched movies and series with episode progress tracking and admin management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
