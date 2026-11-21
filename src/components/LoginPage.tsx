@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Film, Lock, Key, Eye, EyeOff, AlertCircle, ArrowLeft, ShieldCheck, LogOut, CheckCircle2 } from 'lucide-react';
 
 interface LoginPageProps {
@@ -19,6 +19,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loginSuccess, setLoginSuccess] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,12 +157,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   <div className="relative">
                     <Key className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
+                      ref={inputRef}
                       id="admin-password-input"
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter admin passcode..."
-                      autoFocus
                       disabled={isLoading || loginSuccess}
                       className="w-full pl-10 pr-11 py-3 bg-slate-950/90 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
                     />

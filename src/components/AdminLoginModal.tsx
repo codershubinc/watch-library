@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Lock, Key, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 interface AdminLoginModalProps {
@@ -16,6 +16,13 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      inputRef.current?.focus();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -80,12 +87,12 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
             <div className="relative">
               <Key className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
+                ref={inputRef}
                 id="admin-password-input"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password..."
-                autoFocus
                 className="w-full pl-9 pr-10 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
               />
               <button
