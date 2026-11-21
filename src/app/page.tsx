@@ -73,8 +73,14 @@ export default function HomePage() {
   const [isApiKeysModalOpen, setIsApiKeysModalOpen] = useState(false);
 
   // Infinite scroll intersection observer
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const loadMoreRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    if (!isMounted) return;
     if (viewMode !== 'scroll') return;
     if (visibleCount >= filteredAndSortedItems.length) return;
 
@@ -92,9 +98,19 @@ export default function HomePage() {
     return () => {
       if (el) observer.unobserve(el);
     };
-  }, [viewMode, visibleCount, filteredAndSortedItems.length, handleLoadMore]);
+  }, [isMounted, viewMode, visibleCount, filteredAndSortedItems.length, handleLoadMore]);
 
   const hasFilters = Boolean(searchQuery || selectedType !== 'all' || selectedStatus !== 'all');
+
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+        <div className="flex-1 flex items-center justify-center py-32">
+          <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">

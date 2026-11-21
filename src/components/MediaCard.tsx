@@ -63,7 +63,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({
             <span className="text-xs text-amber-400 font-semibold mb-2 tracking-widest">{item.releaseYear}</span>
           )}
 
-          {item.rating !== undefined && (
+          {typeof item.rating === 'number' && !isNaN(item.rating) && (
             <div className="flex items-center gap-1 text-slate-300 text-xs font-medium mb-4">
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
               {item.rating.toFixed(1)} / 10

@@ -467,7 +467,7 @@ export const mediaRepository = {
           backdropUrl: raw.backdropUrl,
           releaseYear: raw.releaseYear ? Number(raw.releaseYear) : undefined,
           status: raw.status || 'watching',
-          rating: raw.rating !== undefined ? Number(raw.rating) : undefined,
+          rating: raw.rating != null && !isNaN(Number(raw.rating)) ? Number(raw.rating) : undefined,
           genres: Array.isArray(raw.genres) ? raw.genres : [],
           plot: raw.plot,
           notes: raw.notes,

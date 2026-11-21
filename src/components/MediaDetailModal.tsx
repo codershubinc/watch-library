@@ -96,7 +96,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                   </div>
                 )}
 
-                {item.rating !== undefined && (
+                {typeof item.rating === 'number' && !isNaN(item.rating) && (
                   <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 font-bold text-xs">
                     <Star className="w-3.5 h-3.5 fill-amber-400" />
                     <span>{item.rating.toFixed(1)} / 10</span>
