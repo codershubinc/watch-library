@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
 import net from 'net';
 import dns from 'dns';
 import { guardReadOnly } from '@/server/auth';
@@ -9,13 +7,6 @@ import { handleCorsOptions } from '@/server/cors';
 
 export async function OPTIONS() {
   return handleCorsOptions();
-}
-
-// Store cached images on disk in .cache/images
-const CACHE_DIR = path.join(process.cwd(), '.cache', 'images');
-
-if (!fs.existsSync(CACHE_DIR)) {
-  fs.mkdirSync(CACHE_DIR, { recursive: true });
 }
 
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB limit
@@ -186,66 +177,42 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Query parameter "url" is required' }, { status: 400, headers: guard.headers });
   }
 
+  // Generate deterministic ETag based on image URL
   const hash = crypto.createHash('sha256').update(imageUrl).digest('hex');
-  const cacheFilePath = path.join(CACHE_DIR, `${hash}.bin`);
-  const metaFilePath = path.join(CACHE_DIR, `${hash}.json`);
+  const etag = `"${hash}"`;
 
-  // 1. Check if cached file exists on disk
-  if (fs.existsSync(cacheFilePath) && fs.existsSync(metaFilePath)) {
-    try {
-      const metaRaw = fs.readFileSync(metaFilePath, 'utf8');
-      const meta = JSON.parse(metaRaw);
-      const contentType = ALLOWED_MIME_TYPES.has(meta.contentType) ? meta.contentType : 'image/jpeg';
-
-      const fileBuffer = fs.readFileSync(cacheFilePath);
-
-      return new Response(fileBuffer, {
-        headers: {
-          'Content-Type': contentType,
-          'X-Content-Type-Options': 'nosniff',
-          'Cache-Control': 'public, max-age=31536000, immutable',
-          ETag: `"${hash}"`,
-          'X-Image-Cache': 'HIT',
-        },
-      });
-    } catch (err) {
-      console.warn('[ImageCache] Error reading cache file, will re-fetch:', err);
-    }
+  // 1. Browser HTTP conditional caching check (If-None-Match)
+  const ifNoneMatch = req.headers.get('if-none-match');
+  if (ifNoneMatch === etag || ifNoneMatch === hash) {
+    return new Response(null, {
+      status: 304,
+      headers: {
+        ...guard.headers,
+        ETag: etag,
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options': 'nosniff',
+      },
+    });
   }
 
-  // 2. Fetch remote image securely
+  // 2. Fetch remote image securely in memory (no disk caching)
   try {
     const { buffer, contentType } = await fetchSafeImage(imageUrl);
 
-    try {
-      await fs.promises.writeFile(cacheFilePath, buffer);
-      await fs.promises.writeFile(
-        metaFilePath,
-        JSON.stringify({
-          url: imageUrl,
-          contentType,
-          size: buffer.length,
-          cachedAt: new Date().toISOString(),
-        })
-      );
-    } catch (writeErr) {
-      console.warn('[ImageCache] Could not write image cache to disk:', writeErr);
-    }
-
     return new Response(buffer, {
       headers: {
+        ...guard.headers,
         'Content-Type': contentType,
         'X-Content-Type-Options': 'nosniff',
         'Cache-Control': 'public, max-age=31536000, immutable',
-        ETag: `"${hash}"`,
-        'X-Image-Cache': 'MISS',
+        ETag: etag,
       },
     });
   } catch (fetchErr: any) {
     console.error('[ImageCache] Failed to fetch image:', fetchErr?.message || fetchErr);
     return NextResponse.json(
       { error: fetchErr?.message || 'Failed to retrieve remote image' },
-      { status: 400 }
+      { status: 400, headers: guard.headers }
     );
   }
 }

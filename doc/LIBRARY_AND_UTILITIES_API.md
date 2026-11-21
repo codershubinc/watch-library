@@ -168,13 +168,13 @@ curl -X GET "http://localhost:3001/api/omdb?i=tt1375666"
 
 ## 4. Secure Cached Image Proxy (`GET /api/images/cache`)
 
-Proxies and caches remote movie and series posters.
+Proxies and delivers remote movie and series posters with HTTP browser caching. No server disk storage is used.
 
-### Security Guarantees:
+### Security & Caching Guarantees:
 - **SSRF Hardened**: Prohibits private, loopback (`127.0.0.1`), metadata (`169.254.169.254`), and link-local IP addresses.
 - **Payload Bound**: Maximum 10MB payload size limit.
-- **Content-Type Whitelist**: Accepts raster images only (`image/jpeg`, `image/png`, `image/webp`, `image/gif`). Rejects SVG and scriptable formats.
-- **Aggressive Caching**: Serves with `Cache-Control: public, max-age=86400, stale-while-revalidate=604800`.
+- **Content-Type Whitelist**: Accepts raster images only (`image/jpeg`, `image/png`, `image/webp`, `image/gif`, `image/avif`). Rejects SVG and scriptable formats.
+- **Browser HTTP Caching**: Emits `Cache-Control: public, max-age=31536000, immutable` and `ETag`. Supports conditional `If-None-Match` requests returning `304 Not Modified` with zero server re-download. Zero bytes stored on server disk.
 
 ### Example Request
 ```bash
