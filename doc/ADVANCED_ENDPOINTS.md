@@ -174,34 +174,36 @@ curl -X GET "http://localhost:3001/api/library/export?format=csv" \
 
 ## 6. Media Scrobble Webhook (`POST /api/webhooks/scrobble`)
 
-Integrates with media servers (Plex webhooks, Jellyfin webhooks, Kodi addons, or Home Assistant automations).
+Integrates with media servers (Plex, Jellyfin, Kodi, Home Assistant) or automated agents.
 
-- If the title already exists: updates episode progress or marks it completed.
-- If the title does not exist: automatically creates it!
+- **Auto-Enrichment**: If artwork poster, plot, year, director, or genres are not passed, the endpoint **automatically queries OMDb using the IMDb ID** to populate official poster artwork and metadata!
+- **Payload Flexibility**: Supports `tmdbId`, `posterUrl` / `artwork`, `backdropUrl`, `director`, `genres`, and `plot`.
+- **Existing Titles**: If the title already exists, updates watch status or episode progress, and backfills any missing artwork or `tmdbId`.
+- **New Titles**: If the title does not exist in your catalog, automatically creates it fully populated with artwork and metadata!
 
 Requires an API Key (`Authorization: Bearer wl_live_...` or query param `?apiKey=wl_live_...`).
 
-### Scrobble Movie Watched:
+### Scrobble Movie Watched (Auto-Enriches Poster & Details):
 ```bash
 curl -X POST "http://localhost:3001/api/webhooks/scrobble?apiKey=wl_live_YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "title": "The Batman",
-    "type": "movie",
     "imdbId": "tt1877830",
+    "tmdbId": "414906",
     "rating": 8.5,
     "status": "completed"
   }'
 ```
+*(The server automatically fetches title "The Batman", poster artwork, 2022 release year, genres, plot, and runtime from OMDb!)*
 
-### Scrobble Series Episode Watched:
+### Scrobble Series Episode Watched (With Explicit Artwork):
 ```bash
 curl -X POST "http://localhost:3001/api/webhooks/scrobble?apiKey=wl_live_YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "title": "Severance",
-    "type": "series",
     "imdbId": "tt11280740",
+    "tmdbId": "95396",
+    "artwork": "https://m.media-amazon.com/images/M/MV5BZDI5YzJhODQtMzQyNy00YWNmLWIxMjUtNDBjNjA5YWRjMzExXkEyXkFqcGc@._V1_SX300.jpg",
     "season": 2,
     "episode": 3,
     "status": "watching"

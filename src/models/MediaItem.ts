@@ -34,6 +34,7 @@ export interface MediaItem {
   title: string;
   type: MediaType;
   imdbId: string; // Required unique IMDb identifier (e.g. tt0111161)
+  tmdbId?: string; // Optional TMDB ID (e.g. 414906)
   posterUrl?: string;
   backdropUrl?: string;
   releaseYear?: number;
